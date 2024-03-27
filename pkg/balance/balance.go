@@ -13,4 +13,7 @@ var (
 	ErrorNodeNotAvailable = errors.New("node not available")
 )
 
-type Balance interface{}
+type Balance interface {
+	AddNode(addr string, weight int) error
+	GetNode(token string) (string, error)
+}

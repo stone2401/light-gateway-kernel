@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 type RealServer struct {
@@ -20,6 +21,7 @@ func NewRealServer(addr string) *RealServer {
 
 func (r *RealServer) Hello(w http.ResponseWriter, req *http.Request) {
 	fmt.Printf("http request: %v, addr: %v\n", req.URL.Path, r.addr)
+	time.Sleep(10 * time.Second)
 	w.Write([]byte("hello" + r.addr))
 }
 
@@ -30,7 +32,7 @@ func (r *RealServer) ErrorHandle(w http.ResponseWriter, req *http.Request) {
 
 func (r *RealServer) Run() {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", r.Hello)
+	mux.HandleFunc("/base/hello", r.Hello)
 	mux.HandleFunc("/base/error", r.ErrorHandle)
 	go func() {
 		http.ListenAndServe(r.addr, mux)
