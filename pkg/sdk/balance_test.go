@@ -1,4 +1,4 @@
-package balance
+package sdk
 
 import (
 	"context"

@@ -3,6 +3,8 @@ package sdk
 import "errors"
 
 var (
+	// 无可用节点
+	ErrorNotFoundNode = errors.New("not found node")
 	// 节点已存在
 	ErrorNodeExists = errors.New("node exists")
 	// 节点不存在

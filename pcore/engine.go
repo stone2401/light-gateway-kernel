@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/stone2401/light-gateway-kernel/pkg/balance"
+	"github.com/stone2401/light-gateway-kernel/pkg/sdk"
 )
 
 type Engine struct {
@@ -19,7 +19,7 @@ type Engine struct {
 
 type Handler func(*http.Request) (code int, err error)
 
-func NewEngine(b balance.Balance, handler ...Handler) *Engine {
+func NewEngine(b sdk.Balance, handler ...Handler) *Engine {
 	gin.SetMode(gin.ReleaseMode)
 	ginHandler := []gin.HandlerFunc{}
 	for _, h := range handler {
@@ -36,7 +36,7 @@ func NewEngine(b balance.Balance, handler ...Handler) *Engine {
 	app.Use(ginHandler...)
 	return &Engine{
 		app:   app,
-		proxy: NewSingleHostReverseProxy(b),
+		proxy: sdk.NewSingleHostReverseProxy(b),
 	}
 }
 

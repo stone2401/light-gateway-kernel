@@ -1,23 +1,22 @@
-package balance
+package sdk
 
 import (
 	"context"
 
 	"github.com/google/uuid"
 	"github.com/stone2401/light-gateway-kernel/pkg/monitor"
-	"github.com/stone2401/light-gateway-kernel/pkg/sdk"
 )
 
 type ConsistentHashBanlance struct {
-	sdk.Ring
-	sdk.Encryptor
+	Ring
+	Encryptor
 	monitor monitor.Monitor
 }
 
 func NewConsistentHashBanlance() *ConsistentHashBanlance {
 	return &ConsistentHashBanlance{
-		Ring:      sdk.NewHashRing(),
-		Encryptor: sdk.NewMurmurHasher(),
+		Ring:      NewHashRing(),
+		Encryptor: NewMurmurHasher(),
 		monitor:   nil,
 	}
 }

@@ -5,11 +5,11 @@ import (
 	"net/http"
 
 	"github.com/stone2401/light-gateway-kernel/pcore"
-	"github.com/stone2401/light-gateway-kernel/pkg/balance"
+	"github.com/stone2401/light-gateway-kernel/pkg/sdk"
 )
 
 func main() {
-	b := balance.NewRandomBalance()
+	b := sdk.NewRandomBalance()
 	b.AddNode("http://127.0.0.1:8080/base", 1)
 	b.AddNode("http://127.0.0.1:8081/base", 1)
 

@@ -1,4 +1,4 @@
-package pcore
+package sdk
 
 import (
 	"context"
@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/stone2401/light-gateway-kernel/pkg/balance"
 	"github.com/stone2401/light-gateway-kernel/pkg/zlog"
 )
 
@@ -21,7 +20,7 @@ type GatwayReverseProxy struct {
 	server      http.Server
 }
 
-func NewGatwayReverseProxy(addr string, balancer balance.Balance) *GatwayReverseProxy {
+func NewGatwayReverseProxy(addr string, balancer Balance) *GatwayReverseProxy {
 	reversProxy := NewSingleHostReverseProxy(balancer)
 	ctx, cancel := context.WithCancel(context.Background())
 	return &GatwayReverseProxy{
@@ -59,12 +58,12 @@ func (g *GatwayReverseProxy) Stop() error {
 	return nil
 }
 
-func NewSingleHostReverseProxy(balancer balance.Balance) *httputil.ReverseProxy {
+func NewSingleHostReverseProxy(balance Balance) *httputil.ReverseProxy {
 	director := func(req *http.Request) {
 		token := req.Header.Get("X-Forwarded-For")
-		addr, err := balancer.GetNode(token)
+		addr, err := balance.GetNode(token)
 		if err != nil {
-			if errors.Is(err, balance.ErrorNotFoundNode) {
+			if errors.Is(err, ErrorNotFoundNode) {
 				// TODO: log
 				zlog.Zlog().Error("not found node")
 				return
