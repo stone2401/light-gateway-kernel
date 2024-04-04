@@ -12,6 +12,12 @@ import (
 	"github.com/stone2401/light-gateway-kernel/pkg/zlog"
 )
 
+// 代理服务
+// ctx context.Context 上下文
+// cancel context.CancelFunc 取消上下文
+// addr string 代理服务地址
+// reversProxy *httputil.ReverseProxy 反向代理核心
+// server http.Server 服务，用于监听代理服务
 type GatwayReverseProxy struct {
 	ctx         context.Context
 	cancel      context.CancelFunc
@@ -20,6 +26,22 @@ type GatwayReverseProxy struct {
 	server      http.Server
 }
 
+// 代理拦截
+// Director 代理发送前的拦截
+// ModifyResponse 代理接收后的拦截
+// ErrorHandler 代理错误的拦截
+type Interceptor interface {
+	// 代理发送前的拦截
+	Director(*http.Request)
+	// 代理接收后的拦截
+	ModifyResponse(*http.Response) error
+	// 代理错误的拦截
+	ErrorHandler(http.ResponseWriter, *http.Request, error)
+}
+
+// 初始化 reverse proxy
+// addr string 代理服务地址
+// balancer Balance 负载均衡器
 func NewGatwayReverseProxy(addr string, balancer Balance) *GatwayReverseProxy {
 	reversProxy := NewSingleHostReverseProxy(balancer)
 	ctx, cancel := context.WithCancel(context.Background())
@@ -35,12 +57,14 @@ func NewGatwayReverseProxy(addr string, balancer Balance) *GatwayReverseProxy {
 	}
 }
 
+// 启动代理服务
 func (g *GatwayReverseProxy) Start() error {
 	zlog.Zlog().Info("start proxy server")
 	go g.server.ListenAndServe()
 	return nil
 }
 
+// 停止代理服务
 func (g *GatwayReverseProxy) Stop() error {
 	go func() {
 		// 等待 15 seconds 执行 cancel
@@ -58,8 +82,11 @@ func (g *GatwayReverseProxy) Stop() error {
 	return nil
 }
 
+// 初始化　reverse proxy
+// balancer Balance 负载均衡器
 func NewSingleHostReverseProxy(balance Balance) *httputil.ReverseProxy {
 	director := func(req *http.Request) {
+		// TODO: 负载均衡
 		token := req.Header.Get("X-Forwarded-For")
 		addr, err := balance.GetNode(token)
 		if err != nil {

@@ -27,12 +27,13 @@ func (r *RealServer) Hello(w http.ResponseWriter, req *http.Request) {
 
 func (r *RealServer) ErrorHandle(w http.ResponseWriter, req *http.Request) {
 	fmt.Printf("http request: %v\n", req.URL.Path)
+	w.WriteHeader(500)
 	w.Write([]byte("error"))
 }
 
 func (r *RealServer) Run() {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/base/hello", r.Hello)
+	mux.HandleFunc("/base", r.Hello)
 	mux.HandleFunc("/base/error", r.ErrorHandle)
 	go func() {
 		http.ListenAndServe(r.addr, mux)
@@ -42,8 +43,8 @@ func (r *RealServer) Run() {
 func main() {
 	r := NewRealServer(":8080")
 	r.Run()
-	r2 := NewRealServer(":8081")
-	r2.Run()
+	// r2 := NewRealServer(":8081")
+	// r2.Run()
 	// 结束监听
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)

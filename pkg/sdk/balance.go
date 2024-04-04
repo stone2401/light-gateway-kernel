@@ -1,6 +1,6 @@
 package sdk
 
+// 负载均衡器
 type Balance interface {
-	AddNode(addr string, weight int) error
 	GetNode(token string) (string, error)
 }
