@@ -99,14 +99,7 @@ func (e *Engine) Use(h ...Handler) {
 	e.Handlers = append(e.Handlers, h...)
 }
 
-// Start 启动服务
-func (e *Engine) Start(addr string) error {
-	go e.SyncStart(addr)
-	return nil
-}
-
-// SyncStart 同步启动服务
-func (e *Engine) SyncStart(addr string) error {
+func (e *Engine) initServer(addr string) error {
 	fmt.Println("start server")
 	if e.server != nil {
 		return errors.New("engine is running")
@@ -118,7 +111,40 @@ func (e *Engine) SyncStart(addr string) error {
 		Addr:    addr,
 		Handler: e.router,
 	}
-	return e.server.ListenAndServe()
+	return nil
+}
+
+// Start 启动服务
+func (e *Engine) Start(addr string) error {
+	if err := e.initServer(addr); err != nil {
+		return err
+	}
+	return e.AsyncStart(addr)
+}
+
+func (e *Engine) StartTls(addr string, certFile, keyFile string) error {
+	if err := e.initServer(addr); err != nil {
+		return err
+	}
+	return e.server.ListenAndServeTLS(certFile, keyFile)
+}
+
+// SyncStart 同步启动服务
+func (e *Engine) AsyncStart(addr string) error {
+	if err := e.initServer(addr); err != nil {
+		return err
+	}
+	go e.server.ListenAndServe()
+	return nil
+}
+
+// SyncStart 同步启动服务
+func (e *Engine) AsyncStartTls(addr string, certFile, keyFile string) error {
+	if err := e.initServer(addr); err != nil {
+		return err
+	}
+	go e.server.ListenAndServeTLS(certFile, keyFile)
+	return nil
 }
 
 func (e *Engine) Stop() {

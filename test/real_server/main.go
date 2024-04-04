@@ -6,7 +6,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 )
 
 type RealServer struct {
@@ -21,7 +20,6 @@ func NewRealServer(addr string) *RealServer {
 
 func (r *RealServer) Hello(w http.ResponseWriter, req *http.Request) {
 	fmt.Printf("http request: %v, addr: %v\n", req.URL.Path, r.addr)
-	time.Sleep(10 * time.Second)
 	w.Write([]byte("hello" + r.addr))
 }
 
