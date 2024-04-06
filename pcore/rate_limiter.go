@@ -30,6 +30,9 @@ func (l *Limiter) ProxyHandler(ctx *Context) {
 	}
 	// 修改状态码，返回
 	ctx.Response.WriteHeader(429)
-	ctx.Response.Write([]byte("Too Many Requests"))
+	_, err := ctx.Response.Write([]byte("Too Many Requests"))
+	if err != nil {
+		return
+	}
 	ctx.Abort()
 }

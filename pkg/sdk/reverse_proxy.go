@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"net/http"
 	"net/http/httputil"
@@ -64,6 +65,13 @@ func (g *GatwayReverseProxy) Start() error {
 	return nil
 }
 
+// 启动代理服务
+func (g *GatwayReverseProxy) AsyncStart() error {
+	zlog.Zlog().Info("start proxy server")
+	go g.server.ListenAndServe()
+	return nil
+}
+
 // 停止代理服务
 func (g *GatwayReverseProxy) Stop() error {
 	go func() {
@@ -102,7 +110,23 @@ func NewSingleHostReverseProxy(balance Balance) *httputil.ReverseProxy {
 		}
 		rewriteRequestURL(req, target)
 	}
-	return &httputil.ReverseProxy{Director: director}
+	return &httputil.ReverseProxy{Director: director, Transport: &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+			// RootCAs: func() *x509.CertPool {
+			// 	pool := x509.NewCertPool()
+			// 	file, _ := os.ReadFile("./ca/server.crt")
+			// 	fmt.Println(string(file))
+			// 	pool.AppendCertsFromPEM(file)
+			// 	return pool
+			// }(),
+		},
+		ForceAttemptHTTP2:     true,
+		MaxIdleConns:          100,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
+	}}
 }
 
 func rewriteRequestURL(req *http.Request, target *url.URL) {

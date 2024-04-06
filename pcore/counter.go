@@ -7,10 +7,10 @@ import (
 
 type Counter struct {
 	count atomic.Int64
-	cache chan Entry
+	cache chan Qps
 }
 
-type Entry struct {
+type Qps struct {
 	Count int64
 	Time  time.Time
 }
@@ -18,7 +18,7 @@ type Entry struct {
 func NewCounter(cacheSize int) *Counter {
 	c := &Counter{
 		count: atomic.Int64{},
-		cache: make(chan Entry, cacheSize),
+		cache: make(chan Qps, cacheSize),
 	}
 	go func() {
 		// 等到５的整数时刻，例如　０，５，１０
@@ -27,7 +27,7 @@ func NewCounter(cacheSize int) *Counter {
 		t := time.NewTicker(5 * time.Second)
 		for {
 			<-t.C
-			entry := Entry{
+			entry := Qps{
 				Count: c.count.Swap(0),
 				Time:  time.Now(),
 			}
@@ -48,7 +48,7 @@ func (c *Counter) Inc() {
 }
 
 // 获取统计
-func (c *Counter) Gain() chan Entry {
+func (c *Counter) Gain() chan Qps {
 	return c.cache
 }
 

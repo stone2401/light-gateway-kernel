@@ -49,7 +49,7 @@ func (f *FuseEntry) FuseHandler(ctx *Context) {
 		// 执行被保护的代码，并返回结果。
 		ctx.Next()
 		// 判断　响应状态码是否为大于 500
-		if ctx.Response.statusCode >= 500 {
+		if ctx.Response.Code >= 500 {
 			ctx.Abort()
 			return nil, gobreaker.ErrOpenState
 		}

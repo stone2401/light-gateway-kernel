@@ -6,6 +6,7 @@ import (
 	"sync/atomic"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/net/http2"
 )
 
 func main() {
@@ -57,5 +58,10 @@ func main() {
 		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "模拟请求错误"})
 	})
-	r.Run(":8080")
+	serevr := &http.Server{
+		Addr:    ":8080",
+		Handler: r,
+	}
+	http2.ConfigureServer(serevr, &http2.Server{})
+	serevr.ListenAndServeTLS("../core_test/default.pem", "../core_test/default.key")
 }

@@ -1,14 +1,15 @@
 package pcore
 
 import (
+	"bufio"
 	"context"
 	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"net/http/httputil"
 	"time"
 
-	"github.com/gorilla/mux"
 	"github.com/stone2401/light-gateway-kernel/pkg/sdk"
 )
 
@@ -19,7 +20,7 @@ import (
 type Engine struct {
 	proxy    *httputil.ReverseProxy
 	server   *http.Server
-	router   *mux.Router
+	mux      *http.ServeMux
 	Handlers []Handler
 }
 
@@ -36,13 +37,22 @@ type Handler func(ctx *Context)
 // ResponseWriter 响应写入器
 type ResponseWriter struct {
 	http.ResponseWriter
-	statusCode int
+	Code int
 }
 
 // WriteHeader 写入响应头
 func (w *ResponseWriter) WriteHeader(statusCode int) {
-	w.statusCode = statusCode
+	w.Code = statusCode
 	w.ResponseWriter.WriteHeader(statusCode)
+}
+
+// Hijack 劫持连接
+func (w *ResponseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	hijacker, ok := w.ResponseWriter.(http.Hijacker)
+	if !ok {
+		return nil, nil, fmt.Errorf("ResponseWriter does not support Hijack")
+	}
+	return hijacker.Hijack()
 }
 
 // NewEngine 创建一个新的Engine实例。
@@ -57,7 +67,7 @@ func NewEngine(b sdk.Balance, handler ...Handler) *Engine {
 	// 创建一个新的Engine实例，初始化proxy和router。
 	return &Engine{
 		proxy:    sdk.NewSingleHostReverseProxy(b),
-		router:   mux.NewRouter(),
+		mux:      http.NewServeMux(),
 		Handlers: handler,
 	}
 }
@@ -65,7 +75,7 @@ func NewEngine(b sdk.Balance, handler ...Handler) *Engine {
 // Register 注册路由
 // path string 路由
 // header gin.HandlerFunc 处理函数
-func (e *Engine) Register(path string, h ...Handler) error {
+func (e *Engine) Register(path string, b sdk.Balance, h ...Handler) error {
 	// 添加 *action
 	var err error
 	defer func() {
@@ -75,17 +85,19 @@ func (e *Engine) Register(path string, h ...Handler) error {
 			if !ok {
 				err = errors.New("unknow panic")
 			}
-
 		}
 	}()
-	e.router.PathPrefix(path).HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		resp := &ResponseWriter{ResponseWriter: w}
+	proxy := sdk.NewSingleHostReverseProxy(b)
+	if b == nil {
+		proxy = e.proxy
+	}
+
+	e.mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 		ctx := &Context{
 			Request:  r,
-			Response: resp,
-			index:    -1,
+			Response: &ResponseWriter{ResponseWriter: w},
 			handlers: append(e.Handlers, append(h, func(ctx *Context) {
-				e.proxy.ServeHTTP(resp, ctx.Request)
+				proxy.ServeHTTP(ctx.Response, ctx.Request)
 			})...),
 			Context: context.Background(),
 		}
@@ -100,7 +112,6 @@ func (e *Engine) Use(h ...Handler) {
 }
 
 func (e *Engine) initServer(addr string) error {
-	fmt.Println("start server")
 	if e.server != nil {
 		return errors.New("engine is running")
 	}
@@ -109,7 +120,7 @@ func (e *Engine) initServer(addr string) error {
 	}
 	e.server = &http.Server{
 		Addr:    addr,
-		Handler: e.router,
+		Handler: e.mux,
 	}
 	return nil
 }
@@ -119,7 +130,7 @@ func (e *Engine) Start(addr string) error {
 	if err := e.initServer(addr); err != nil {
 		return err
 	}
-	return e.AsyncStart(addr)
+	return e.server.ListenAndServe()
 }
 
 func (e *Engine) StartTls(addr string, certFile, keyFile string) error {
@@ -129,21 +140,25 @@ func (e *Engine) StartTls(addr string, certFile, keyFile string) error {
 	return e.server.ListenAndServeTLS(certFile, keyFile)
 }
 
-// SyncStart 同步启动服务
+// AsyncStart 同步启动服务
 func (e *Engine) AsyncStart(addr string) error {
 	if err := e.initServer(addr); err != nil {
 		return err
 	}
-	go e.server.ListenAndServe()
+	go func() {
+		_ = e.server.ListenAndServe()
+	}()
 	return nil
 }
 
-// SyncStart 同步启动服务
+// AsyncStartTls 同步启动服务
 func (e *Engine) AsyncStartTls(addr string, certFile, keyFile string) error {
 	if err := e.initServer(addr); err != nil {
 		return err
 	}
-	go e.server.ListenAndServeTLS(certFile, keyFile)
+	go func() {
+		_ = e.server.ListenAndServeTLS(certFile, keyFile)
+	}()
 	return nil
 }
 
@@ -156,7 +171,10 @@ func (e *Engine) Stop() {
 			ctx.Done()
 		}
 	}()
-	e.server.Shutdown(ctx)
+	err := e.server.Shutdown(ctx)
+	if err != nil {
+		return
+	}
 }
 
 func (ctx *Context) Next() {
