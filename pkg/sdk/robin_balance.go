@@ -14,6 +14,7 @@ type RobinBalance struct {
 	curIndex int
 }
 
+// 　创建一个轮询负载均衡
 func NewRobinBalance() *RobinBalance {
 	return &RobinBalance{
 		nodes:   make([]string, 0),

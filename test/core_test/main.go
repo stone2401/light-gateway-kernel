@@ -29,7 +29,8 @@ func httpProxy() {
 	// 创建一个随机余额的SDK实例
 	b := sdk.NewRandomBalance()
 	// 向SDK实例添加一个节点
-	b.AddNode("https://stone2401.com:2401", 1)
+	b.AddNode("http://localhost:8080", 1)
+	b.AddNode("http://localhost:8081", 1)
 
 	// 创建一个每秒最多处理10个请求的限流器
 	limiter := pcore.NewLimiter(10000)
@@ -52,5 +53,6 @@ func httpProxy() {
 		}
 	}()
 	// 启动代理服务器并同步监听8083端口，返回启动状态
-	fmt.Println(proxy.StartTls(":8083", "./ca/server.crt", "./ca/server.key"))
+	fmt.Println(proxy.Start(":8083"))
+	// fmt.Println(proxy.StartTls(":8083", "./ca/server.crt", "./ca/server.key"))
 }

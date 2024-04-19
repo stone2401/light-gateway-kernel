@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+</head>
+
+<body>
+    <input type="text" />
+    <button>发送</button>
+    <div class="msg">
+
+    </div>
+</body>
+<script>
+    console.log(window.location)
+    // ws 连接
+    var ws = new WebSocket("ws://" + window.location.host + "/api/ws");
+    ws.onopen = function () {
+        console.log("ws open");
+    };
+    ws.onmessage = function (e) {
+        console.log(e.data);
+        // 换行, linux换行符号
+        e.data = e.data.replace(/\r/g, "");
+        document.querySelector(".msg").innerHTML += e.data + "<br/>";
+    };
+    ws.onclose = function () {
+        console.log("ws close");
+    };
+    ws.onerror = function (e) {
+        console.log("ws error", e);
+    };
+    // 点击事件
+    document.querySelector("button").onclick = function () {
+        var text = document.querySelector("input").value;
+        ws.send(text);
+    };
+</script>
+
+</html>

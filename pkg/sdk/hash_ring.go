@@ -84,6 +84,7 @@ type VirtualNode struct {
 	score int32
 }
 
+// 创建hash环
 func NewHashRing() *HashRing {
 	return &HashRing{
 		LockMutex:           NewLockMutex(),

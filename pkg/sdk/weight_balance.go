@@ -20,6 +20,7 @@ type weightNode struct {
 	effectiveWeight int
 }
 
+// 权重轮巡
 func NewWeightBalance() *WeightBalance {
 	return &WeightBalance{
 		totalWeight: 0,

@@ -13,6 +13,7 @@ type ConsistentHashBanlance struct {
 	monitor monitor.Monitor
 }
 
+// hash 一致性哈希
 func NewConsistentHashBanlance() *ConsistentHashBanlance {
 	return &ConsistentHashBanlance{
 		Ring:      NewHashRing(),

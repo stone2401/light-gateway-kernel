@@ -15,6 +15,7 @@ type RandomBalance struct {
 	monitor monitor.Monitor
 }
 
+// 随机负载均衡
 func NewRandomBalance() *RandomBalance {
 	return &RandomBalance{
 		nodes:   make([]string, 0),
