@@ -1,6 +1,6 @@
 module github.com/stone2401/light-gateway-kernel
 
-go 1.22
+go 1.20
 
 require (
 	github.com/gin-gonic/gin v1.9.1
@@ -9,6 +9,7 @@ require (
 	github.com/sony/gobreaker v0.5.0
 	github.com/spaolacci/murmur3 v1.1.0
 	go.uber.org/zap v1.27.0
+	golang.org/x/net v0.22.0
 	golang.org/x/time v0.5.0
 )
 
@@ -34,7 +35,6 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/arch v0.7.0 // indirect
 	golang.org/x/crypto v0.21.0 // indirect
-	golang.org/x/net v0.22.0 // indirect
 	golang.org/x/sys v0.18.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	google.golang.org/protobuf v1.33.0 // indirect

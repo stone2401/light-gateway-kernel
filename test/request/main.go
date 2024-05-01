@@ -36,7 +36,8 @@ func requestFunc(client http.Client, name string) {
 		fmt.Println(err)
 	}
 	now2 := time.Now()
-	for i := range 100000 {
+
+	for i := 100000; i > 0; i-- {
 		if i%1000 == 0 {
 			fmt.Println(i)
 			fmt.Println(time.Since(now2))
