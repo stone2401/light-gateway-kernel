@@ -1,9 +1,10 @@
-package sdk
+package pcore
 
 import (
 	"sync"
 
 	"github.com/stone2401/light-gateway-kernel/pkg/monitor"
+	"github.com/stone2401/light-gateway-kernel/pkg/sdk"
 )
 
 type RobinBalance struct {
@@ -37,7 +38,7 @@ func (r *RobinBalance) AddNode(addr string, weight int) error {
 
 func (r *RobinBalance) GetNode(token string) (string, error) {
 	if len(r.nodes) == 0 {
-		return "", ErrorNotFoundNode
+		return "", sdk.ErrorNotFoundNode
 	}
 	r.mu.RLock()
 	defer r.mu.RUnlock()

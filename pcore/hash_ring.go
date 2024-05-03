@@ -1,9 +1,11 @@
-package sdk
+package pcore
 
 import (
 	"context"
 	"sync"
 	"time"
+
+	"github.com/stone2401/light-gateway-kernel/pkg/sdk"
 )
 
 // ring 接口
@@ -146,7 +148,7 @@ func (h *HashRing) Add(ctx context.Context, score int32, node string) error {
 func (h *HashRing) Rem(ctx context.Context, score int32, node string) error {
 	targetNode, index := h.getScore(ctx, score)
 	if targetNode == nil {
-		return ErrorNodeNotExists
+		return sdk.ErrorNodeNotExists
 	}
 	// 1. 如果只有一个节点，删除
 	if len(targetNode.nodes) == 1 {
@@ -167,7 +169,7 @@ func (h *HashRing) Rem(ctx context.Context, score int32, node string) error {
 func (h *HashRing) Ceil(ctx context.Context, score int32) (string, error) {
 	targetNode := h.ceiling(ctx, score)
 	if targetNode == nil {
-		return "", ErrorNodeNotAvailable
+		return "", sdk.ErrorNodeNotAvailable
 	}
 	return targetNode.nodes[0], nil
 }
@@ -176,7 +178,7 @@ func (h *HashRing) Ceil(ctx context.Context, score int32) (string, error) {
 func (h *HashRing) Floor(ctx context.Context, score int32) (string, error) {
 	targetNode := h.floor(ctx, score)
 	if targetNode == nil {
-		return "", ErrorNodeNotExists
+		return "", sdk.ErrorNodeNotExists
 	}
 	return targetNode.nodes[0], nil
 }

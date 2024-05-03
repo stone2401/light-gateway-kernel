@@ -1,10 +1,11 @@
-package sdk
+package pcore
 
 import (
 	"context"
 
 	"github.com/google/uuid"
 	"github.com/stone2401/light-gateway-kernel/pkg/monitor"
+	"github.com/stone2401/light-gateway-kernel/pkg/sdk"
 )
 
 type ConsistentHashBanlance struct {
@@ -24,7 +25,7 @@ func NewConsistentHashBanlance() *ConsistentHashBanlance {
 
 func (c *ConsistentHashBanlance) AddNode(addr string, weight int) error {
 	if len(c.Ring.GetNodeReplicas(context.Background(), addr)) != 0 {
-		return ErrorNodeExists
+		return sdk.ErrorNodeExists
 	}
 	if weight == 0 {
 		weight = 1

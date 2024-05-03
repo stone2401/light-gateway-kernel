@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/stone2401/light-gateway-kernel/pcore"
-	"github.com/stone2401/light-gateway-kernel/pkg/sdk"
 )
 
 // 主函数：创建一个带有随机余额的SDK实例，配置节点和限流器，并启动代理服务器。
@@ -27,11 +26,11 @@ func httpProxy() {
 		log.Println(http.ListenAndServe(":6060", nil))
 	}()
 	// 创建一个随机余额的SDK实例
-	b := sdk.NewRandomBalance()
+	b := pcore.NewRandomBalance()
 	// 向SDK实例添加一个节点
-	b.AddNode("http://localhost:8080", 1)
-	b.AddNode("http://localhost:8081", 1)
-
+	// b.AddNode("http://localhost:8080", 1)
+	// b.AddNode("http://localhost:8081", 1)
+	b.AddNode("https://www.baidu.com", 1)
 	// 创建一个每秒最多处理10个请求的限流器
 	limiter := pcore.NewLimiter(10000)
 	// 创建一个熔断器，超过5秒内处理5个请求失败后，接下来5秒内将拒绝处理请求
@@ -48,8 +47,8 @@ func httpProxy() {
 	go func() {
 		// 循环监听计数器增加的事件，并打印计数和时间
 		for {
-			<-counter.Gain()
-			// fmt.Println(entry.Count, entry.Time.Format("2006-01-02 15:04:05"))
+			entry := <-counter.Gain()
+			fmt.Println(entry.Count, entry.Time.Format("2006-01-02 15:04:05"))
 		}
 	}()
 	// 启动代理服务器并同步监听8083端口，返回启动状态

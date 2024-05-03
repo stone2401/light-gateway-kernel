@@ -1,10 +1,11 @@
-package sdk
+package pcore
 
 import (
 	"math/rand"
 	"sync"
 
 	"github.com/stone2401/light-gateway-kernel/pkg/monitor"
+	"github.com/stone2401/light-gateway-kernel/pkg/sdk"
 )
 
 type RandomBalance struct {
@@ -38,7 +39,7 @@ func (r *RandomBalance) AddNode(addr string, weight int) error {
 
 func (r *RandomBalance) GetNode(token string) (string, error) {
 	if len(r.nodes) == 0 {
-		return "", ErrorNotFoundNode
+		return "", sdk.ErrorNotFoundNode
 	}
 	index := rand.Intn(r.length)
 	r.mu.RLock()
