@@ -1,9 +1,8 @@
-package pcore
+package load_balance
 
 import (
 	"sync"
 
-	"github.com/stone2401/light-gateway-kernel/pkg/monitor"
 	"github.com/stone2401/light-gateway-kernel/pkg/sdk"
 )
 
@@ -12,7 +11,6 @@ type WeightBalance struct {
 	nodes       []*weightNode
 	length      int
 	mu          sync.RWMutex
-	monitor     monitor.Monitor
 }
 
 type weightNode struct {
@@ -28,7 +26,6 @@ func NewWeightBalance() *WeightBalance {
 		nodes:       make([]*weightNode, 0),
 		length:      0,
 		mu:          sync.RWMutex{},
-		monitor:     nil,
 	}
 }
 
@@ -64,4 +61,16 @@ func (w *WeightBalance) GetNode(token string) (string, error) {
 	}
 	base.effectiveWeight -= w.totalWeight
 	return base.node, nil
+}
+
+func (w *WeightBalance) RmNode(addr string) {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	for i, v := range w.nodes {
+		if v.node == addr {
+			w.nodes = append(w.nodes[:i], w.nodes[i+1:]...)
+			w.length--
+			return
+		}
+	}
 }

@@ -3,12 +3,12 @@ package main
 import (
 	"net/http"
 
-	"github.com/stone2401/light-gateway-kernel/pcore"
+	loadbalance "github.com/stone2401/light-gateway-kernel/pcore/load_balance"
 	"github.com/stone2401/light-gateway-kernel/pkg/sdk"
 )
 
 func main() {
-	b := pcore.NewRandomBalance()
+	b := loadbalance.NewRandomBalance()
 	b.AddNode("http://localhost:2401", 1)
 	proxy := sdk.NewSingleHostReverseProxy(b)
 	mux := http.NewServeMux()

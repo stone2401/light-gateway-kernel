@@ -1,25 +1,22 @@
-package pcore
+package load_balance
 
 import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/stone2401/light-gateway-kernel/pkg/monitor"
 	"github.com/stone2401/light-gateway-kernel/pkg/sdk"
 )
 
 type ConsistentHashBanlance struct {
-	Ring
-	Encryptor
-	monitor monitor.Monitor
+	sdk.Ring
+	sdk.Encryptor
 }
 
 // hash 一致性哈希
 func NewConsistentHashBanlance() *ConsistentHashBanlance {
 	return &ConsistentHashBanlance{
-		Ring:      NewHashRing(),
-		Encryptor: NewMurmurHasher(),
-		monitor:   nil,
+		Ring:      sdk.NewHashRing(),
+		Encryptor: sdk.NewMurmurHasher(),
 	}
 }
 
@@ -53,4 +50,10 @@ func (c *ConsistentHashBanlance) GetNode(token string) (string, error) {
 		return "", err
 	}
 	return addr, nil
+}
+
+func (c *ConsistentHashBanlance) RmNode(addr string) {
+	c.Lock(context.Background(), addr, 10)
+	defer c.Unlock(context.Background(), addr)
+	c.Ring.Rem(context.Background(), c.Encryptor.Encrypt(addr), addr)
 }

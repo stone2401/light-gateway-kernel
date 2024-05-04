@@ -1,10 +1,9 @@
-package pcore
+package load_balance
 
 import (
 	"math/rand"
 	"sync"
 
-	"github.com/stone2401/light-gateway-kernel/pkg/monitor"
 	"github.com/stone2401/light-gateway-kernel/pkg/sdk"
 )
 
@@ -12,17 +11,14 @@ type RandomBalance struct {
 	nodes  []string
 	length int
 	mu     sync.RWMutex
-	// 监听者
-	monitor monitor.Monitor
 }
 
 // 随机负载均衡
 func NewRandomBalance() *RandomBalance {
 	return &RandomBalance{
-		nodes:   make([]string, 0),
-		length:  0,
-		mu:      sync.RWMutex{},
-		monitor: nil,
+		nodes:  make([]string, 0),
+		length: 0,
+		mu:     sync.RWMutex{},
 	}
 }
 
@@ -45,4 +41,16 @@ func (r *RandomBalance) GetNode(token string) (string, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	return r.nodes[index], nil
+}
+
+func (r *RandomBalance) RmNode(addr string) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	for i, v := range r.nodes {
+		if v == addr {
+			r.nodes = append(r.nodes[:i], r.nodes[i+1:]...)
+			r.length--
+			return
+		}
+	}
 }

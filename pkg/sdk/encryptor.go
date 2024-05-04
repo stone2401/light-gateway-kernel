@@ -1,4 +1,4 @@
-package pcore
+package sdk
 
 import (
 	"math"

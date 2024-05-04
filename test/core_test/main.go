@@ -26,11 +26,14 @@ func httpProxy() {
 		log.Println(http.ListenAndServe(":6060", nil))
 	}()
 	// 创建一个随机余额的SDK实例
-	b := pcore.NewRandomBalance()
+	// b := load_balance.NewRandomBalance()
 	// 向SDK实例添加一个节点
 	// b.AddNode("http://localhost:8080", 1)
 	// b.AddNode("http://localhost:8081", 1)
-	b.AddNode("https://www.baidu.com", 1)
+	// b.AddNode("https://www.baidu.com", 1)
+	// 创建观察者
+	monitor := pcore.NewEtcdMonitor([]string{"127.0.0.1:2379"})
+	monitor.Watch()
 	// 创建一个每秒最多处理10个请求的限流器
 	limiter := pcore.NewLimiter(10000)
 	// 创建一个熔断器，超过5秒内处理5个请求失败后，接下来5秒内将拒绝处理请求
@@ -40,6 +43,7 @@ func httpProxy() {
 	counter := pcore.NewCounter(10)
 
 	// 使用限流器和熔断器创建代理引擎
+	b := monitor.Register("/", pcore.LoadBalanceRandom)
 	proxy := pcore.NewEngine(b, counter.CounterHandler, limiter.ProxyHandler, fuse.FuseHandler)
 	// 注册代理路由，匹配所有以"/{name}"开始的请求
 	proxy.Register("/", b)

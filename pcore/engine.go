@@ -100,6 +100,7 @@ func (e *Engine) Register(path string, b sdk.Balance, h ...Handler) error {
 				proxy.ServeHTTP(ctx.Response, ctx.Request)
 			})...),
 			Context: context.Background(),
+			index:   -1,
 		}
 		ctx.Next()
 	})

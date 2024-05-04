@@ -1,14 +1,20 @@
 package main
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"os/exec"
 	"os/signal"
+	"strconv"
 	"syscall"
 
+	"github.com/stone2401/light-gateway-kernel/pcore"
+	"github.com/stone2401/light-gateway-kernel/pkg/sdk"
+	clientv3 "go.etcd.io/etcd/client/v3"
 	"golang.org/x/net/websocket"
 )
 
@@ -94,6 +100,26 @@ func main() {
 	r.Run()
 	r2 := NewRealServer(":8081")
 	r2.Run()
+	client, err := clientv3.New(clientv3.Config{Endpoints: []string{"127.0.0.1:2379"}})
+	if err != nil {
+		panic(err)
+	}
+	has := sdk.NewMurmurHasher()
+	nodes := []*pcore.NodeInfo{
+		{
+			Ip:     "http://127.0.0.1:8080",
+			Weight: 1,
+		},
+		{
+			Ip:     "http://127.0.0.1:8081",
+			Weight: 1,
+		},
+	}
+	for _, node := range nodes {
+		b, _ := json.Marshal(node)
+		enc := has.Encrypt(string(b))
+		client.Put(context.Background(), "/"+strconv.Itoa(int(enc)), string(b))
+	}
 	// 结束监听
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
