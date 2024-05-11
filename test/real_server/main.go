@@ -30,7 +30,6 @@ func NewRealServer(addr string) *RealServer {
 
 func (r *RealServer) Hello(w http.ResponseWriter, req *http.Request) {
 	fmt.Printf("http request: %v, addr: %v\n", req.URL.Path, r.addr)
-	w.WriteHeader(500)
 	w.Write([]byte("hello" + r.addr))
 }
 
@@ -96,7 +95,7 @@ func (r *RealServer) Run() {
 }
 
 func main() {
-	r := NewRealServer(":8080")
+	r := NewRealServer(":8082")
 	r.Run()
 	r2 := NewRealServer(":8081")
 	r2.Run()
@@ -107,7 +106,7 @@ func main() {
 	has := sdk.NewMurmurHasher()
 	nodes := []*pcore.NodeInfo{
 		{
-			Ip:     "http://127.0.0.1:8080",
+			Ip:     "http://127.0.0.1:8082",
 			Weight: 1,
 		},
 		{
@@ -118,10 +117,27 @@ func main() {
 	for _, node := range nodes {
 		b, _ := json.Marshal(node)
 		enc := has.Encrypt(string(b))
-		client.Put(context.Background(), "/"+strconv.Itoa(int(enc)), string(b))
+		client.Put(context.Background(), "8080/base"+strconv.Itoa(int(enc)), string(b))
 	}
 	// 结束监听
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
+	// http.HandleFunc("/api/ping", func(w http.ResponseWriter, r *http.Request) {
+	// 	// w.Write([]byte("pong"))
+	// 	http.NotFound(w, r)
+	// })
+	// go func() {
+	// 	defer func() {
+	// 		if p := recover(); p != nil {
+	// 			fmt.Println(p)
+	// 		}
+	// 	}()
+	// 	time.Sleep(10 * time.Second)
+	// 	http.HandleFunc("/api/ping", func(w http.ResponseWriter, r *http.Request) {})
+	// }()
+	// err := http.ListenAndServe(":8090", nil)
+	// if err != nil {
+	// 	panic(err)
+	// }
 }
