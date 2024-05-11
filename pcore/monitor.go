@@ -3,7 +3,6 @@ package pcore
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"reflect"
 	"sync"
 	"time"
@@ -114,7 +113,6 @@ func (m *EtcdMonitor) SyncWatch() {
 					balance.RmNode(tmp.Ip)
 				}
 				delete(m.nodeMap, string(v.Kv.Key))
-				fmt.Printf("delete %#v\n", v.Kv.String())
 				zlog.Zlog().Info("watch", zap.Any("type", v.Type), zap.Any("key", string(v.Kv.Key)))
 			}
 		}
@@ -136,7 +134,6 @@ func (m *EtcdMonitor) UnWatch() {
 func (m *EtcdMonitor) Register(name string, balance LoadBalance) sdk.Balance {
 	zlog.Zlog().Info("register", zap.String("name", name))
 	// 1. 先停止上一次监听，之后上锁
-	fmt.Println("try lock")
 	if !m.mu.TryLock() {
 		// 加锁失败
 		m.stopChan <- true
