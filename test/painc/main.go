@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"reflect"
+	"regexp"
 )
 
 type StructTest struct {
@@ -19,7 +19,14 @@ type ChiStructTest struct {
 }
 
 func main() {
-	my := "石振飞"
-	value := reflect.ValueOf(my)
-	fmt.Println("name", value.Kind())
+	// my := "石振飞"
+	// value := reflect.ValueOf(my)
+	// fmt.Println("name", value.Kind())
+	oldUrl := "/ai/v1/user"
+	newUrl := `/$1`
+	re := regexp.MustCompile(`^.+api/?`)
+	fmt.Printf("re.MatchString(oldUrl): %v\n", re.MatchString(oldUrl))
+	newPath := re.ReplaceAllString(oldUrl, newUrl)
+	fmt.Println(newPath)
+	// fmt.Printf("strings.Replace(oldUrl, \"^.+api/?\", newUrl, 1): %v\n", strings.Replace(oldUrl, "^.+api/?", newUrl, 1))
 }

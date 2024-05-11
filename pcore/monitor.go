@@ -28,7 +28,6 @@ type Monitor interface {
 }
 
 type EtcdMonitor struct {
-	endpoints   []string
 	client      *clientv3.Client
 	mu          sync.Mutex
 	watchGroups map[string]sdk.Balance
@@ -54,16 +53,11 @@ func (node *NodeInfo) Unmarshal(data []byte) error {
 	return json.Unmarshal(data, node)
 }
 
-func NewEtcdMonitor(endpoints []string) Monitor {
-	client, err := clientv3.New(clientv3.Config{Endpoints: endpoints})
-	if err != nil {
-		panic(err)
-	}
+func NewEtcdMonitor(client *clientv3.Client) Monitor {
 	chanStop := make(chan bool)
 	cases := []reflect.SelectCase{{Chan: reflect.ValueOf(chanStop), Dir: reflect.SelectRecv}}
 	chanInfo := []ChanInfo{{name: "stop", ch: chanStop}}
 	return &EtcdMonitor{
-		endpoints:   endpoints,
 		client:      client,
 		mu:          sync.Mutex{},
 		watchGroups: map[string]sdk.Balance{},

@@ -32,3 +32,18 @@ func NewLoadBalance(balance LoadBalance) sdk.Balance {
 		return load_balance.NewRandomBalance()
 	}
 }
+
+func GetLoadBalance(balance int) LoadBalance {
+	switch balance {
+	case 0:
+		return LoadBalanceRoundRobin
+	case 1:
+		return LoadBalanceRandom
+	case 2:
+		return LoadBalanceConsistentHash
+	case 3:
+		return LoadBalanceWeight
+	default:
+		return LoadBalanceRandom
+	}
+}

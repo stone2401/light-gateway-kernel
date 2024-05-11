@@ -6,12 +6,14 @@ import (
 
 	"github.com/stone2401/light-gateway-kernel/pcore"
 	"github.com/stone2401/light-gateway-kernel/pkg/zlog"
+	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 var wg sync.WaitGroup
 
 func main() {
-	monitor := pcore.NewEtcdMonitor([]string{"127.0.0.1:2379"})
+	client, _ := clientv3.New(clientv3.Config{Endpoints: []string{"127.0.0.1:2379"}})
+	monitor := pcore.NewEtcdMonitor(client)
 	balance := monitor.Register("test", pcore.LoadBalanceRandom)
 	go func() {
 		for {

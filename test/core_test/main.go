@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/stone2401/light-gateway-kernel/pcore"
+	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 // 主函数：创建一个带有随机余额的SDK实例，配置节点和限流器，并启动代理服务器。
@@ -32,7 +33,8 @@ func httpProxy() {
 	// b.AddNode("http://localhost:8081", 1)
 	// b.AddNode("https://www.baidu.com", 1)
 	// 创建观察者
-	monitor := pcore.NewEtcdMonitor([]string{"127.0.0.1:2379"})
+	client, _ := clientv3.New(clientv3.Config{Endpoints: []string{"127.0.0.1:2379"}})
+	monitor := pcore.NewEtcdMonitor(client )
 	monitor.Watch()
 	// 创建一个每秒最多处理10个请求的限流器
 	limiter := pcore.NewLimiter(10000)

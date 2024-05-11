@@ -5,6 +5,8 @@ import (
 	"sync"
 
 	"github.com/stone2401/light-gateway-kernel/pkg/sdk"
+	"github.com/stone2401/light-gateway-kernel/pkg/zlog"
+	"go.uber.org/zap"
 )
 
 type RandomBalance struct {
@@ -28,6 +30,7 @@ func (r *RandomBalance) AddNode(addr string, weight int) error {
 	}
 	r.mu.Lock()
 	defer r.mu.Unlock()
+	zlog.Zlog().Info("add node", zap.String("addr", addr), zap.Int("weight", weight))
 	r.nodes = append(r.nodes, addr)
 	r.length++
 	return nil
