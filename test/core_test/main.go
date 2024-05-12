@@ -34,7 +34,7 @@ func httpProxy() {
 	// b.AddNode("https://www.baidu.com", 1)
 	// 创建观察者
 	client, _ := clientv3.New(clientv3.Config{Endpoints: []string{"127.0.0.1:2379"}})
-	monitor := pcore.NewEtcdMonitor(client )
+	monitor := pcore.NewEtcdMonitor(client)
 	monitor.Watch()
 	// 创建一个每秒最多处理10个请求的限流器
 	limiter := pcore.NewLimiter(10000)
@@ -42,7 +42,7 @@ func httpProxy() {
 	fuse := pcore.NewFuseEntry("test", 5*time.Second, 5, 0.5)
 
 	// 创建一个计数器，每10秒打印一次计数和时间``
-	counter := pcore.NewCounter(10)
+	counter := pcore.NewCounter("2222", 10)
 
 	// 使用限流器和熔断器创建代理引擎
 	b := monitor.Register("/", pcore.LoadBalanceRandom)

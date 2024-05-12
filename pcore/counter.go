@@ -6,19 +6,24 @@ import (
 )
 
 type Counter struct {
-	count atomic.Int64
-	cache chan Qps
+	name      string
+	count     atomic.Int64
+	cache     chan Qps
+	cacheSize int
 }
 
 type Qps struct {
+	Name  string
 	Count int64
 	Time  time.Time
 }
 
-func NewCounter(cacheSize int) *Counter {
+func NewCounter(name string, cacheSize int) *Counter {
 	c := &Counter{
-		count: atomic.Int64{},
-		cache: make(chan Qps, cacheSize),
+		name:      name,
+		count:     atomic.Int64{},
+		cache:     make(chan Qps, cacheSize),
+		cacheSize: cacheSize,
 	}
 	go func() {
 		// 等到５的整数时刻，例如　０，５，１０
@@ -28,6 +33,7 @@ func NewCounter(cacheSize int) *Counter {
 		for {
 			<-t.C
 			entry := Qps{
+				Name:  c.name,
 				Count: c.count.Swap(0),
 				Time:  time.Now(),
 			}
@@ -55,4 +61,17 @@ func (c *Counter) Gain() chan Qps {
 func (c *Counter) CounterHandler(ctx *Context) {
 	ctx.Next()
 	c.Inc()
+}
+
+func (c *Counter) SetName(name string) {
+	c.name = name
+}
+
+func (c *Counter) Close() {
+	close(c.cache)
+}
+
+func (c *Counter) Reset() {
+	c.count.Store(0)
+	c.cache = make(chan Qps, c.cacheSize)
 }
